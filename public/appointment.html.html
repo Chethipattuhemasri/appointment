@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hospital Appointment</title>
+
+<style>
+
+/* BODY */
+body{
+font-family: Arial, sans-serif;
+background:#f0f4f8;
+margin:0;
+}
+
+/* HEADER */
+.header{
+width:100%;
+background:#e3f2fd;
+color:#2a7ae2;
+font-size:30px;
+font-weight:bold;
+text-align:center;
+padding:15px 0;
+margin-bottom:20px;
+box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* CONTAINER */
+.container{
+background:white;
+padding:25px;
+width:350px;
+margin: auto;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+/* LABELS */
+label{
+display:block;
+margin-top:10px;
+font-weight:bold;
+}
+
+/* INPUTS */
+input{
+width:100%;
+padding:10px;
+margin-top:5px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+/* BUTTON */
+button{
+width:100%;
+margin-top:15px;
+padding:12px;
+background:#2a7ae2;
+color:white;
+border:none;
+border-radius:5px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1a5dc9;
+}
+
+/* TEXT */
+#msg{
+margin-top:10px;
+color:green;
+font-weight:bold;
+text-align:center;
+}
+
+#doctorDisplay{
+margin-top:10px;
+color:#2a7ae2;
+font-weight:bold;
+text-align:center;
+}
+
+/* MAP */
+iframe{
+width:100%;
+height:200px;
+margin-top:10px;
+border-radius:10px;
+border:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+Hospital Appointment
+</div>
+
+<!-- FORM -->
+<div class="container">
+
+<label>Patient Name</label>
+<input type="text" id="name">
+
+<label>Email</label>
+<input type="email" id="email">
+
+<label>Phone Number</label>
+<input type="text" id="phone">
+
+<label>Symptoms</label>
+<input type="text" id="symptoms" placeholder="e.g. fever, tooth pain">
+
+<label>Select Date</label>
+<input type="date" id="date">
+
+<label>Select Time</label>
+<input type="time" id="time">
+
+<button onclick="book()">Book Appointment</button>
+
+<p id="doctorDisplay"></p>
+<p id="msg"></p>
+
+<h3>Hospital Location</h3>
+
+<iframe src="https://maps.google.com/maps?q=tirupati&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+
+</div>
+
+<script>
+
+// 🤖 ML DOCTOR PREDICTION
+function predictDoctor(symptoms){
+
+symptoms = symptoms.toLowerCase();
+
+if(symptoms.includes("chest") || symptoms.includes("heart")){
+return "Dr. Ravi - Cardiologist";
+}
+else if(symptoms.includes("tooth") || symptoms.includes("dental")){
+return "Dr. Priya - Dentist";
+}
+else if(symptoms.includes("child")){
+return "Dr. Anitha - Pediatrician";
+}
+else{
+return "Dr. Kumar - General Physician";
+}
+}
+
+// BOOK FUNCTION
+async function book(){
+
+let name=document.getElementById("name").value;
+let email=document.getElementById("email").value;
+let symptoms=document.getElementById("symptoms").value;
+let date=document.getElementById("date").value;
+let time=document.getElementById("time").value;
+
+if(name==="" || email==="" || symptoms==="" || date==="" || time===""){
+alert("⚠️ Fill all details");
+return;
+}
+
+// ML prediction
+let doctor = predictDoctor(symptoms);
+
+// show doctor
+document.getElementById("doctorDisplay").innerText =
+"👨‍⚕️ Assigned Doctor: " + doctor;
+
+// success message
+document.getElementById("msg").innerText =
+"✅ Your appointment is successfully booked with " + doctor;
+
+// send to backend
+await fetch("http://localhost:3000/book",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name,email,doctor,date,time})
+});
+
+}
+
+</script>
+
+</body>
+</html>
