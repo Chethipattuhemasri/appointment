@@ -1,47 +1,68 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// serve frontend
-app.use(express.static("public"));
+/* =========================
+   🔗 MongoDB Connection
+========================= */
+mongoose.connect("mongodb://127.0.0.1:27017/appointments")
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => console.log("❌ MongoDB Error:", err));
 
-app.post("/book", async (req,res)=>{
-
-const {name,email,doctor,date,time} = req.body;
-
-try{
-
-let transporter = nodemailer.createTransport({
-service: "gmail",
-auth:{
-user: "yourgmail@gmail.com",
-pass: "your_app_password"
-}
+/* =========================
+   📄 Schema
+========================= */
+const AppointmentSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  doctor: String,
+  date: String,
+  time: String
 });
 
-let mailOptions = {
-from: "yourgmail@gmail.com",
-to: email,
-subject: "Appointment Confirmed",
-text: `Hello ${name}, your appointment with ${doctor} on ${date} at ${time} is confirmed.`
-};
+const Appointment = mongoose.model("Appointment", AppointmentSchema);
 
-await transporter.sendMail(mailOptions);
+/* =========================
+   📌 Routes
+========================= */
 
-res.send("Email Sent ✅");
-
-}catch(err){
-console.log(err);
-res.send("Error ❌");
-}
-
+// Test route
+app.get("/", (req, res) => {
+  res.send("Server Working ✅");
 });
 
-app.listen(3000,()=>{
-console.log("Server running at http://localhost:3000");
+// Save appointment
+app.post("/book", async (req, res) => {
+  const { name, email, doctor, date, time } = req.body;
+
+  try {
+    const newAppointment = new Appointment({
+      name,
+      email,
+      doctor,
+      date,
+      time
+    });
+
+    await newAppointment.save();
+
+    res.send("✅ Appointment Saved");
+
+  } catch (err) {
+    console.log("FULL ERROR 👉", err);
+    res.status(500).send("❌ Error");
+  }
+});
+
+/* =========================
+   🚀 Server Start
+========================= */
+app.listen(3000, () => {
+  console.log("🚀 Server running at http://localhost:3000");
 });

@@ -4,15 +4,11 @@
 <title>Hospital Appointment</title>
 
 <style>
-
-/* BODY */
 body{
 font-family: Arial, sans-serif;
 background:#f0f4f8;
 margin:0;
 }
-
-/* HEADER */
 .header{
 width:100%;
 background:#e3f2fd;
@@ -24,25 +20,19 @@ padding:15px 0;
 margin-bottom:20px;
 box-shadow:0 2px 5px rgba(0,0,0,0.2);
 }
-
-/* CONTAINER */
 .container{
 background:white;
 padding:25px;
 width:350px;
-margin: auto;
+margin:auto;
 border-radius:10px;
 box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
-
-/* LABELS */
 label{
 display:block;
 margin-top:10px;
 font-weight:bold;
 }
-
-/* INPUTS */
 input{
 width:100%;
 padding:10px;
@@ -50,8 +40,6 @@ margin-top:5px;
 border-radius:5px;
 border:1px solid #ccc;
 }
-
-/* BUTTON */
 button{
 width:100%;
 margin-top:15px;
@@ -63,27 +51,21 @@ border-radius:5px;
 font-size:16px;
 cursor:pointer;
 }
-
 button:hover{
 background:#1a5dc9;
 }
-
-/* TEXT */
 #msg{
 margin-top:10px;
 color:green;
 font-weight:bold;
 text-align:center;
 }
-
 #doctorDisplay{
 margin-top:10px;
 color:#2a7ae2;
 font-weight:bold;
 text-align:center;
 }
-
-/* MAP */
 iframe{
 width:100%;
 height:200px;
@@ -91,18 +73,13 @@ margin-top:10px;
 border-radius:10px;
 border:none;
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
-Hospital Appointment
-</div>
-<a href="public/login.html">Login</a> 
-<!-- FORM -->
+<div class="header">Hospital Appointment</div>
+
 <div class="container">
 
 <label>Patient Name</label>
@@ -115,7 +92,7 @@ Hospital Appointment
 <input type="text" id="phone">
 
 <label>Symptoms</label>
-<input type="text" id="symptoms" placeholder="e.g. fever, tooth pain">
+<input type="text" id="symptoms">
 
 <label>Select Date</label>
 <input type="date" id="date">
@@ -129,63 +106,55 @@ Hospital Appointment
 <p id="msg"></p>
 
 <h3>Hospital Location</h3>
-
 <iframe src="https://maps.google.com/maps?q=tirupati&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
 
 </div>
 
 <script>
 
-// 🤖 ML DOCTOR PREDICTION
+// 🤖 ML DOCTOR
 function predictDoctor(symptoms){
-
 symptoms = symptoms.toLowerCase();
 
-if(symptoms.includes("chest") || symptoms.includes("heart")){
-return "Dr. Ravi - Cardiologist";
-}
-else if(symptoms.includes("tooth") || symptoms.includes("dental")){
-return "Dr. Priya - Dentist";
-}
-else if(symptoms.includes("child")){
-return "Dr. Anitha - Pediatrician";
-}
-else{
-return "Dr. Kumar - General Physician";
-}
+if(symptoms.includes("heart")) return "Dr. Ravi - Cardiologist";
+else if(symptoms.includes("tooth")) return "Dr. Priya - Dentist";
+else if(symptoms.includes("child")) return "Dr. Anitha - Pediatrician";
+else return "Dr. Kumar - General Physician";
 }
 
 // BOOK FUNCTION
 async function book(){
 
-let name=document.getElementById("name").value;
-let email=document.getElementById("email").value;
-let symptoms=document.getElementById("symptoms").value;
-let date=document.getElementById("date").value;
-let time=document.getElementById("time").value;
+let name = document.getElementById("name").value;
+let email = document.getElementById("email").value;
+let phone = document.getElementById("phone").value;
+let symptoms = document.getElementById("symptoms").value;
+let date = document.getElementById("date").value;
+let time = document.getElementById("time").value;
 
 if(name==="" || email==="" || symptoms==="" || date==="" || time===""){
 alert("⚠️ Fill all details");
 return;
 }
 
-// ML prediction
 let doctor = predictDoctor(symptoms);
 
-// show doctor
 document.getElementById("doctorDisplay").innerText =
 "👨‍⚕️ Assigned Doctor: " + doctor;
 
-// success message
-document.getElementById("msg").innerText =
-"✅ Your appointment is successfully booked with " + doctor;
-
-// send to backend
-await fetch("http://localhost:3000/book",{
+try{
+let res = await fetch("http://localhost:3000/book",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({name,email,doctor,date,time})
+body:JSON.stringify({name,email,phone,symptoms,doctor,date,time})
 });
+
+let data = await res.text();
+document.getElementById("msg").innerText = data;
+
+}catch(err){
+alert("❌ Server Error");
+}
 
 }
 
